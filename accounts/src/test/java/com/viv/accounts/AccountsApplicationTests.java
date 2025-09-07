@@ -1,10 +1,10 @@
-package com.eazybytes.cards;
+package com.viv.accounts;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CardsApplicationTests {
+class AccountsApplicationTests {
 
 	@Test
 	void contextLoads() {
