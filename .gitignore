@@ -1,0 +1,47 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+hs_err_pid*
+
+# Spring Boot
+spring.log
+logs/
+
+# IDEs
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Misc
+node_modules/
+env/
+venv/
+.env
