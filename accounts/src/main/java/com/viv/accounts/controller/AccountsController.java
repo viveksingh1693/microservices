@@ -1,10 +1,29 @@
 package com.viv.accounts.controller;
 
+import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.viv.accounts.constants.AccountsConstants;
+import com.viv.accounts.dto.AccountsContactInfoDto;
 import com.viv.accounts.dto.CustomerDto;
 import com.viv.accounts.dto.ErrorResponseDto;
 import com.viv.accounts.dto.ResponseDto;
 import com.viv.accounts.service.IAccountsService;
+
+import io.micrometer.core.ipc.http.HttpSender.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,21 +32,25 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Account Service", description = "CRUD REST APIs to CREATE, UPDATE, FETCH AND DELETE account details")
 @RestController
 @RequestMapping(path = "/api", produces = { MediaType.APPLICATION_JSON_VALUE })
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Validated
 public class AccountsController {
 
-        private IAccountsService iAccountsService;
+        @Value("${build.version}")
+        private String buildVersion;
+
+        @Autowired
+        private Environment environment;
+
+        private final IAccountsService iAccountsService;
+
+        @Autowired
+        private AccountsContactInfoDto accountsContactInfoDto;
 
         @Operation(summary = "Create Account REST API", description = "REST API to create new Customer &  Account")
         @ApiResponses({
@@ -99,4 +122,39 @@ public class AccountsController {
                 }
         }
 
+        @Operation(summary = "Get Build Version REST API", description = "REST API to get the build version of the service")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
+                        @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+        })
+        @GetMapping("/build-info")
+        public ResponseEntity<String> getBuildInfo() {
+                return ResponseEntity.ok(buildVersion);
+        }
+
+        @Operation(summary = "Get Java Version REST API", description = "REST API to get the java version of the service")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
+                        @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+        })
+        @GetMapping("/java-version")
+        public ResponseEntity<String> getJavaVersion() {
+            return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
+        }
+        
+
+
+        @Operation(summary = "Get Contact Details REST API", description = "REST API to get the contact details of the service")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
+                        @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+        })
+        @GetMapping("/contact-info")
+        public ResponseEntity<AccountsContactInfoDto> getContactnfo() {
+        
+                return ResponseEntity.ok(accountsContactInfoDto);
+                
+        }
+        
+        
 }
