@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +30,7 @@ import com.viv.loans.service.ILoansService;
 @Tag(name = "Loan", description = "CRUD REST APIs for Loans microservices")
 @RestController
 @RequestMapping(path = "/api", produces = { MediaType.APPLICATION_JSON_VALUE })
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Validated
 public class LoansController {
 
@@ -42,7 +43,7 @@ public class LoansController {
         @Autowired
         private LoansContactInfoDto loansContactInfoDto;
 
-        private ILoansService iLoansService;
+        private final ILoansService iLoansService;
 
         @Operation(summary = "Create Loan REST API", description = "REST API to create new loan")
         @ApiResponses({
