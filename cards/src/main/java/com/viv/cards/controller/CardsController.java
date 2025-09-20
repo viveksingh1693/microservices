@@ -49,7 +49,8 @@ public class CardsController {
         @Autowired
         private CardsContactInfoDto cardsContactInfoDto;
 
-        private ICardsService iCardsService;
+        @Autowired
+        private final ICardsService iCardsService;
 
         @Operation(summary = "Create Card REST API", description = "REST API to create new Card")
         @ApiResponses({
@@ -59,6 +60,7 @@ public class CardsController {
         @PostMapping("/create")
         public ResponseEntity<ResponseDto> createCard(
                         @Valid @RequestParam @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits") String mobileNumber) {
+             
                 iCardsService.createCard(mobileNumber);
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)

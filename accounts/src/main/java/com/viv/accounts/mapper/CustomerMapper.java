@@ -1,5 +1,6 @@
 package com.viv.accounts.mapper;
 
+import com.viv.accounts.dto.CustomerDetailsDto;
 import com.viv.accounts.dto.CustomerDto;
 import com.viv.accounts.entity.Customer;
 
@@ -16,7 +17,15 @@ public class CustomerMapper {
         customer.setName(customerDto.getName());
         customer.setEmail(customerDto.getEmail());
         customer.setMobileNumber(customerDto.getMobileNumber());
+        
         return customer;
+    }
+
+    public static CustomerDetailsDto mapToCustomerDetailsDto(Customer customer, CustomerDetailsDto customerDetailsDto) {
+        customerDetailsDto.setName(customer.getName());
+        customerDetailsDto.setEmail(customer.getEmail());
+        customerDetailsDto.setMobileNumber(customer.getMobileNumber());
+        return customerDetailsDto;
     }
 
 }

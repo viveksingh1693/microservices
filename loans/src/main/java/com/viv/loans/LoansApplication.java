@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import com.viv.loans.dto.LoansContactInfoDto;
 
+
+
 @SpringBootApplication
 @EnableConfigurationProperties(value = LoansContactInfoDto.class)
 @EnableJpaAuditing(auditorAwareRef = "auditAwareImpl")
