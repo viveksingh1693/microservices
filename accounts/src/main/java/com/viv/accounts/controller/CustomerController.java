@@ -4,6 +4,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +21,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Tag(name = "Rest Api for Customer", description = "CRUD REST APIs to CREATE, UPDATE, FETCH AND DELETE Customer details")
 @RestController
 @RequestMapping(path = "/api", produces = { MediaType.APPLICATION_JSON_VALUE })
@@ -44,9 +47,11 @@ public class CustomerController {
     })
     @GetMapping("/fetchCustomerDetails")
     public ResponseEntity<CustomerDetailsDto> fetchAccountDetails(
+            @RequestHeader("viv-correlation-id") String correlationId,
             @RequestParam @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits") String mobileNumber) {
 
-        CustomerDetailsDto customerDetailsDto = customerService.fetchCustomerDetails(mobileNumber);
+        log.info("The Correlation id is: {} " + correlationId);
+        CustomerDetailsDto customerDetailsDto = customerService.fetchCustomerDetails(mobileNumber,correlationId);
         if (customerDetailsDto != null) {
             return ResponseEntity.ok(customerDetailsDto);
         }

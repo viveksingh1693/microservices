@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,7 +33,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Tag(name = "Card Service", description = "CRUD REST APIs CREATE, UPDATE, FETCH AND DELETE card details")
 @RestController
 @RequestMapping(path = "/api", produces = { MediaType.APPLICATION_JSON_VALUE })
@@ -60,7 +63,7 @@ public class CardsController {
         @PostMapping("/create")
         public ResponseEntity<ResponseDto> createCard(
                         @Valid @RequestParam @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits") String mobileNumber) {
-             
+
                 iCardsService.createCard(mobileNumber);
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
@@ -74,8 +77,11 @@ public class CardsController {
         })
         @GetMapping("/fetch")
         public ResponseEntity<CardsDto> fetchCardDetails(
+                        @RequestHeader("viv-correlation-id") String correlationId,
                         @RequestParam @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits") String mobileNumber) {
                 CardsDto cardsDto = iCardsService.fetchCard(mobileNumber);
+                log.info("Inside Card: fetch Card details: {}", correlationId);
+
                 return ResponseEntity.status(HttpStatus.OK).body(cardsDto);
         }
 
@@ -122,7 +128,6 @@ public class CardsController {
                 }
         }
 
-
         @GetMapping("/build-info")
         public ResponseEntity<String> getBuildInfo() {
                 return ResponseEntity.ok(buildVersion);
@@ -135,10 +140,8 @@ public class CardsController {
         })
         @GetMapping("/java-version")
         public ResponseEntity<String> getJavaVersion() {
-            return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
+                return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
         }
-        
-
 
         @Operation(summary = "Get Contact Details REST API", description = "REST API to get the contact details of the service")
         @ApiResponses({
@@ -147,9 +150,9 @@ public class CardsController {
         })
         @GetMapping("/contact-info")
         public ResponseEntity<CardsContactInfoDto> getContactnfo() {
-        
+
                 return ResponseEntity.ok(cardsContactInfoDto);
-                
+
         }
 
 }

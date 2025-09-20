@@ -20,7 +20,9 @@ import com.viv.accounts.service.client.CardsFeignClient;
 import com.viv.accounts.service.client.LoansFeignClient;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor
 @Service("customerService")
 public class CustomerServiceImpl implements ICustomerService {
@@ -37,7 +39,9 @@ public class CustomerServiceImpl implements ICustomerService {
      * @return CustomerDetailsDto containing customer details
      */
     @Override
-    public CustomerDetailsDto fetchCustomerDetails(String mobileNumber) {
+    public CustomerDetailsDto fetchCustomerDetails(String mobileNumber, String correlationId) {
+       log.info("Processing fetch Customer Details for correlationId: {} " , correlationId); 
+       
         Customer customer = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(
                 () -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
         Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId()).orElseThrow(
@@ -49,13 +53,13 @@ public class CustomerServiceImpl implements ICustomerService {
                 new CustomerDetailsDto());
         customerDetailsDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts, new AccountsDto()));
 
-        ResponseEntity<LoansDto> fetchLoanDetails = loansFeignClient.fetchLoanDetails(mobileNumber);
+        ResponseEntity<LoansDto> fetchLoanDetails = loansFeignClient.fetchLoanDetails(correlationId,mobileNumber);
 
         if (fetchLoanDetails.getStatusCode().is2xxSuccessful() && fetchLoanDetails.getBody() != null) {
             customerDetailsDto.setLoansDto(fetchLoanDetails.getBody());
         }
 
-        ResponseEntity<CardsDto> fetchCardDetailsResponse = cardsFeignClient.fetchCardDetails(mobileNumber);
+        ResponseEntity<CardsDto> fetchCardDetailsResponse = cardsFeignClient.fetchCardDetails(correlationId,mobileNumber);
 
         if (fetchCardDetailsResponse.getStatusCode().is2xxSuccessful() && fetchCardDetailsResponse.getBody() != null) {
             customerDetailsDto.setCardsDto(fetchCardDetailsResponse.getBody());
