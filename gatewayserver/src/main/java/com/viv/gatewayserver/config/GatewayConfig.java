@@ -1,11 +1,14 @@
 package com.viv.gatewayserver.config;
 
+import java.security.Key;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
+import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
+import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +18,7 @@ import org.springframework.http.HttpStatus;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import reactor.core.publisher.Mono;
 
 @Configuration
 public class GatewayConfig {
@@ -54,7 +58,11 @@ public class GatewayConfig {
                                                 .path("/viv/cards/**")
                                                 .filters(f -> f.rewritePath("/viv/cards/(?<segment>.*)", "/${segment}")
                                                                 .addResponseHeader("X-Response-Time",
-                                                                                LocalDateTime.now().toString()))
+                                                                                LocalDateTime.now().toString())
+                                                                .requestRateLimiter(config -> config
+                                                                                .setRateLimiter(redisRateLimiterConfig())
+                                                                                .setKeyResolver(userKeyResolver())))
+
                                                 .uri("lb://CARDS"))
                                 .build();
         }
@@ -66,5 +74,19 @@ public class GatewayConfig {
                                 .timeLimiterConfig(io.github.resilience4j.timelimiter.TimeLimiterConfig.custom()
                                                 .timeoutDuration(Duration.ofSeconds(2)).build())
                                 .build());
+        }
+
+        @Bean
+        public RedisRateLimiter redisRateLimiterConfig() {
+                // replenishRate = number of requests added to the bucket per second
+                // burstCapacity = maximum number of requests allowed to be accumulated in the
+                // bucket
+                return new RedisRateLimiter(1, 1, 1);
+        }
+
+        @Bean
+        KeyResolver userKeyResolver() {
+                return exchange -> Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst("user"))
+                                .defaultIfEmpty("anonymous");
         }
 }

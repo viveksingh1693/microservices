@@ -24,6 +24,7 @@ import com.viv.accounts.dto.ErrorResponseDto;
 import com.viv.accounts.dto.ResponseDto;
 import com.viv.accounts.service.IAccountsService;
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -150,8 +151,13 @@ public class AccountsController {
                         @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
         })
         @GetMapping("/java-version")
+        @RateLimiter(name = "getJavaVersion", fallbackMethod = "getJavaVersionFallback")
         public ResponseEntity<String> getJavaVersion() {
                 return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
+        }
+
+        public ResponseEntity<String> getJavaVersionFallback(Throwable ex) {
+                return ResponseEntity.ok("17");
         }
 
         @Operation(summary = "Get Contact Details REST API", description = "REST API to get the contact details of the service")
