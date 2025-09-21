@@ -56,3 +56,7 @@ The `docker-compose.yml` in the repo root controls networking and port mappings.
 ## Next steps / suggestions
 - Add health check endpoints and readiness/liveness probes for production deployments.
 - Add `README.md` files per service (already present) describing endpoints and data shapes.
+
+## Order of resiliency pattern
+Function → BulkHead → TimeLimiter → RateLimiter → CircuitBreaker → Retry
+See: https://resilience4j.readme.io/docs/getting-started-3
