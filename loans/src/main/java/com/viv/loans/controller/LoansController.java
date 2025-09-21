@@ -147,8 +147,9 @@ public class LoansController {
         })
         @GetMapping("/contact-info")
         public ResponseEntity<LoansContactInfoDto> getContactnfo() {
-
-                return ResponseEntity.ok(loansContactInfoDto);
+                log.info("Invoked Loans Contact Info");
+                throw new RuntimeException("Simulated service failure");
+                // return ResponseEntity.ok(loansContactInfoDto);
 
         }
 
