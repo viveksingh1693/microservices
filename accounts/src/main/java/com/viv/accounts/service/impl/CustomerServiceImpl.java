@@ -44,17 +44,23 @@ public class CustomerServiceImpl implements ICustomerService {
        
         Customer customer = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(
                 () -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
+      
         Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId()).orElseThrow(
                 () -> new ResourceNotFoundException("Account", "customerId", customer.getCustomerId().toString()));
+        
         CustomerDto customerDto = CustomerMapper.mapToCustomerDto(customer, new CustomerDto());
+        
         customerDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts, new AccountsDto()));
 
+        log.info("Customer Details: {} " , customerDto);
         CustomerDetailsDto customerDetailsDto = CustomerMapper.mapToCustomerDetailsDto(customer,
                 new CustomerDetailsDto());
         customerDetailsDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts, new AccountsDto()));
 
+        log.info("Invoking Loans microservice to fetch loan details for correlationId: {} " , correlationId);
         ResponseEntity<LoansDto> fetchLoanDetails = loansFeignClient.fetchLoanDetails(correlationId,mobileNumber);
 
+        log.info("Loan Details: {} " , fetchLoanDetails);
         if (fetchLoanDetails.getStatusCode().is2xxSuccessful() && fetchLoanDetails.getBody() != null) {
             customerDetailsDto.setLoansDto(fetchLoanDetails.getBody());
         }
