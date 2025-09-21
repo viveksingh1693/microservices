@@ -3,12 +3,18 @@ package com.viv.gatewayserver.config;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 
 @Configuration
 public class GatewayConfig {
@@ -35,7 +41,8 @@ public class GatewayConfig {
                                                                                 .setRetries(3)
                                                                                 .setMethods(HttpMethod.GET)
                                                                                 .setBackoff(Duration.ofMillis(1000),
-                                                                                                Duration.ofMillis(2000), 2,
+                                                                                                Duration.ofMillis(2000),
+                                                                                                2,
                                                                                                 false)
                                                                                 .setStatuses(HttpStatus.SERVICE_UNAVAILABLE)
 
@@ -52,4 +59,12 @@ public class GatewayConfig {
                                 .build();
         }
 
+        @Bean
+        public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
+                return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+                                .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+                                .timeLimiterConfig(io.github.resilience4j.timelimiter.TimeLimiterConfig.custom()
+                                                .timeoutDuration(Duration.ofSeconds(2)).build())
+                                .build());
+        }
 }

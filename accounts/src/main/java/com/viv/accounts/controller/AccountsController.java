@@ -24,6 +24,7 @@ import com.viv.accounts.dto.ErrorResponseDto;
 import com.viv.accounts.dto.ResponseDto;
 import com.viv.accounts.service.IAccountsService;
 
+import io.github.resilience4j.retry.annotation.Retry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,6 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @EnableFeignClients
 @Tag(name = "Account Service", description = "CRUD REST APIs to CREATE, UPDATE, FETCH AND DELETE account details")
@@ -40,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping(path = "/api", produces = { MediaType.APPLICATION_JSON_VALUE })
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class AccountsController {
 
         @Value("${build.version}")
@@ -129,8 +132,16 @@ public class AccountsController {
                         @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
         })
         @GetMapping("/build-info")
+        @Retry(name = "accountsRetry", fallbackMethod = "getbuildInfoFallback")
         public ResponseEntity<String> getBuildInfo() {
-                return ResponseEntity.ok(buildVersion);
+                log.info("Build Version Fetched Successfully");
+                throw new RuntimeException("Simulated Service Failure");
+                // return ResponseEntity.ok(buildVersion);
+        }
+
+        public ResponseEntity<String> getbuildInfoFallback(Throwable ex) {
+                log.info("Build Version Fallback Method Invoked");
+                return ResponseEntity.ok("0.9");
         }
 
         @Operation(summary = "Get Java Version REST API", description = "REST API to get the java version of the service")
@@ -140,10 +151,8 @@ public class AccountsController {
         })
         @GetMapping("/java-version")
         public ResponseEntity<String> getJavaVersion() {
-            return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
+                return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
         }
-        
-
 
         @Operation(summary = "Get Contact Details REST API", description = "REST API to get the contact details of the service")
         @ApiResponses({
@@ -152,10 +161,9 @@ public class AccountsController {
         })
         @GetMapping("/contact-info")
         public ResponseEntity<AccountsContactInfoDto> getContactnfo() {
-        
+
                 return ResponseEntity.ok(accountsContactInfoDto);
-                
+
         }
-        
-        
+
 }
