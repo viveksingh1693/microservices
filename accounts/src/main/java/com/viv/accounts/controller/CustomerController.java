@@ -50,12 +50,14 @@ public class CustomerController {
             @RequestHeader("viv-correlation-id") String correlationId,
             @RequestParam @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits") String mobileNumber) {
 
-        log.info("The Correlation id is: {} " + correlationId);
+        log.info("Fetch Customer details Start");
+
         CustomerDetailsDto customerDetailsDto = customerService.fetchCustomerDetails(mobileNumber,correlationId);
         if (customerDetailsDto != null) {
             return ResponseEntity.ok(customerDetailsDto);
         }
 
+        log.info("Fetch Customer details End");
         return null;
     }
 

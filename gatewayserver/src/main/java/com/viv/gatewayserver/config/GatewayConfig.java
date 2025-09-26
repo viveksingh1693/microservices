@@ -1,6 +1,5 @@
 package com.viv.gatewayserver.config;
 
-import java.security.Key;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import reactor.core.publisher.Mono;
 

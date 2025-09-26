@@ -49,8 +49,8 @@ public class LoansController {
         @Autowired
         private Environment environment;
 
-        @Autowired
-        private LoansContactInfoDto loansContactInfoDto;
+        // @Autowired
+        // private LoansContactInfoDto loansContactInfoDto;
 
         private final ILoansService iLoansService;
 
@@ -77,8 +77,11 @@ public class LoansController {
         public ResponseEntity<LoansDto> fetchLoanDetails(
                         @RequestHeader("viv-correlation-id") String correlationId,
                         @RequestParam @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits") String mobileNumber) {
+         
+                log.info("Fetch Loan Details Start");
                 LoansDto loansDto = iLoansService.fetchLoan(mobileNumber);
                 log.info("Fetching Loan Details for correlationId: {} ", correlationId);
+                log.info("Fetch Loan Details End");
                 return ResponseEntity.status(HttpStatus.OK).body(loansDto);
         }
 
