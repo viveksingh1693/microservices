@@ -2,10 +2,11 @@ package com.viv.accounts.service.impl;
 
 import java.util.Optional;
 import java.util.Random;
-
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import com.viv.accounts.constants.AccountsConstants;
+import com.viv.accounts.dto.AccountMsgDto;
 import com.viv.accounts.dto.AccountsDto;
 import com.viv.accounts.dto.CustomerDto;
 import com.viv.accounts.entity.Accounts;
@@ -19,13 +20,17 @@ import com.viv.accounts.repository.CustomerRepository;
 import com.viv.accounts.service.IAccountsService;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class AccountsServiceImpl implements IAccountsService {
 
     private AccountsRepository accountsRepository;
     private CustomerRepository customerRepository;
+
+    private final StreamBridge streamBridge;
 
     /**
      * @param customerDto - CustomerDto Object
@@ -39,7 +44,21 @@ public class AccountsServiceImpl implements IAccountsService {
                     + customerDto.getMobileNumber());
         }
         Customer savedCustomer = customerRepository.save(customer);
-        accountsRepository.save(createNewAccount(savedCustomer));
+        Accounts savedAccount =  accountsRepository.save(createNewAccount(savedCustomer));
+
+        sendCommunication( savedAccount,savedCustomer);
+
+    }
+
+    private void sendCommunication(Accounts account, Customer customer) {
+       log.info("Sending message to RabbitMQ");
+       var accountMsgDto =  new AccountMsgDto(account.getAccountNumber(), 
+       customer.getName(), customer.getEmail(), customer.getMobileNumber());
+       var result =  streamBridge.send("sendCommunication-out-0", accountMsgDto);
+         if(!result) {
+          throw new RuntimeException("Exception occurred while sending message to RabbitMQ");
+         }
+         log.info("Message sent to RabbitMQ successfully");
     }
 
     /**
@@ -109,6 +128,16 @@ public class AccountsServiceImpl implements IAccountsService {
                 () -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
         accountsRepository.deleteByCustomerId(customer.getCustomerId());
         customerRepository.deleteById(customer.getCustomerId());
+        return true;
+    }
+
+    @Override
+    public boolean updateCommunicationStatus(Long accountNumber) {
+        Accounts accounts = accountsRepository.findById(accountNumber).orElseThrow(
+                () -> new ResourceNotFoundException("Account", "AccountNumber",
+                        accountNumber.toString()));
+        accounts.setCommunicationSw(!accounts.getCommunicationSw());
+        accountsRepository.save(accounts);
         return true;
     }
 

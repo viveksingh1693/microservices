@@ -33,4 +33,11 @@ public interface IAccountsService {
      */
     boolean deleteAccount(String mobileNumber);
 
+    /**
+     *
+     * @param customerId - Input Customer Id
+     * @return boolean indicating if the communication preference update is
+     *         successful or not
+     */
+    boolean updateCommunicationStatus(Long accountNumber);
 }
